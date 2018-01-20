@@ -1,0 +1,23 @@
+[package]
+name = "minifb"
+version = "0.1.0"
+license = "MIT/Apache-2.0"
+authors = ["Daniel Collin <daniel@collin.com>"]
+description = "Cross-platform window setup with optional bitmap rendering"
+keywords = ["windowing", "window", "framebuffer"]
+categories = ["rendering"]
+repository = "https://github.com/emoon/rust_minifb"
+homepage = "https://github.com/emoon/rust_minifb"
+documentation = "https://docs.rs/minifb/0.10.1/minifb"
+readme = "README.md"
+
+[badges]
+appveyor = { repository = "emoon/rust-minifb" }
+travis-ci = { repository = "emoon/rust_minifb" }
+
+[build-dependencies]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
