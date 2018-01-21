@@ -6,31 +6,58 @@
 		<title>Minifb WebAssembly example</title>
 	</head>
 	<body>
-		<script>
-			if (!('WebAssembly' in window)) {
-				alert("Your browser doesn't support Web Assembly. You may need to enable it in your browser's flags.");
-			}
+		<canvas id="canvas" style='position:absolute; left:0px; top:0px; width: 100%'></canvas>
 
-			fetch('../target/wasm32-unknown-unknown/debug/minifb.wasm').then(response =>
-				response.arrayBuffer()
-			).then(bytes =>
-				WebAssembly.instantiate(bytes, { env: imports() })
-			).then(results => {
-				let module = {};
-				let mod = results.instance;
-				module.alloc = mod.exports.alloc;
-				module.dealloc = mod.exports.dealloc;
-				module.draw = mod.exports.draw;
+<script>
+	if (!('WebAssembly' in window)) {
+		alert("Your browser doesn't support Web Assembly. You may need to enable it in your browser's flags.");
+	}
 
-				var width = 320;
-				var height = 200;
+	function imports() {
+		let imports = {};
 
-				let byteSize = width * height * 4;
-				var pointer = module.alloc(byteSize);
-				var buffer = new Uint8Array(mod.exports.memory.buffer, pointer, byteSize);
-			});
-		</script>
+		return imports;
+	}
 
-		<input type="button" id="btn" value="Click me to execute hello world!" />
+	fetch('minifb.wasm').then(response =>
+		response.arrayBuffer()
+	).then(bytes =>
+		WebAssembly.instantiate(bytes, { env: imports() })
+	).then(results => {
+		let module = {};
+		let mod = results.instance;
+
+		module.main = mod.exports.main;
+		module.alloc = mod.exports.alloc;
+		module.dealloc = mod.exports.dealloc;
+		module.resize = mod.exports.resize;
+
+		var width = 320;
+		var height = 200;
+
+		let byteSize = width * height * 4;
+		var pointer = module.alloc(byteSize);
+		var buffer = new Uint8Array(mod.exports.memory.buffer, pointer, byteSize);
+
+		if(canvas.getContext) {
+			var ctx = canvas.getContext("2d");
+
+			var pointer = module.alloc(byteSize);
+			var usub = new Uint8ClampedArray(mod.exports.memory.buffer, pointer, byteSize);
+			var img = new ImageData(usub, width, height);
+
+			module.main();
+		}
+
+		function resize() {
+			canvas.width = window.innerWidth;
+			canvas.height = window.innerHeight;
+			module.resize(canvas.width, canvas.height);
+		}
+		window.addEventListener('resize', () => {
+			resize();
+		});
+	});
+</script>
 	</body>
 </html>
